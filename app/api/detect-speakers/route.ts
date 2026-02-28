@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_tokens: 512,
+        max_completion_tokens: 512,
         messages: [
           {
             role: 'user',
-            content: `Analyze this meeting transcript and detect how many unique speakers there are.
+            text: `Analyze this meeting transcript and detect how many unique speakers there are.
 
 Look for patterns such as:
 - "Speaker 1:", "Speaker 2:", "Speaker N:" labels

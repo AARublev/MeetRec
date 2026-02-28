@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_tokens: 8192,
+        max_completion_tokens: 8192,
         messages: [
           {
             role: 'user',
-            content: `You are a meeting transcription specialist. Take the raw meeting text below and convert it into a professionally formatted transcript with timestamps and speaker labels.
+            text: `You are a meeting transcription specialist. Take the raw meeting text below and convert it into a professionally formatted transcript with timestamps and speaker labels.
 
 Rules:
 - Assign each speaking turn to a speaker (Speaker 1, Speaker 2, etc.)

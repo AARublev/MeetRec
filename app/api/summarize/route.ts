@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_tokens: 4096,
+        max_completion_tokens: 4096,
         messages: [
           {
             role: 'user',
-            content: `You are an expert meeting analyst. Analyze this meeting transcript and return a JSON with:
+            text: `You are an expert meeting analyst. Analyze this meeting transcript and return a JSON with:
 - executiveSummary: 3-4 sentence professional summary of what was discussed and decided
 - keyDecisions: array of concrete decisions made (with decision owner if mentioned), e.g. {"decision": "string", "owner": "string or null"}
 - actionItems: array of {"task": "string", "assignee": "string or null", "deadline": "string or null", "priority": "high"|"medium"|"low"}
