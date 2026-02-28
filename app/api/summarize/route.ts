@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 Return ONLY valid JSON (no markdown, no \`\`\`). Use null for missing optional fields.
 
 Transcript:
-${transcript}`,
+${JSON.stringify(transcript).slice(1, -1)}`,
           },
         ],
       }),

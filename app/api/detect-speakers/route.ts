@@ -48,7 +48,7 @@ Return a JSON object with this exact structure (no markdown, no \`\`\`):
 If uncertain, estimate based on conversational turns. Minimum 1 speaker.
 
 Transcript:
-${transcript}`,
+${JSON.stringify(transcript).slice(1, -1)}`,
           },
         ],
       }),
