@@ -19,6 +19,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Транскрипт не указан' }, { status: 400 })
     }
 
+    const prompt = `You are an expert meeting analyst. Analyze this meeting transcript and return a JSON with:
+- executiveSummary: 3-4 sentence summary
+- keyDecisions: array of {"decision": "string", "owner": "string or null"}
+- actionItems: array of {"task": "string", "assignee": "string or null", "deadline": "string or null", "priority": "high" or "medium" or "low"}
+- discussionTopics: array of {"topic": "string", "summary": "string", "duration": "string"}
+- participants: array of {"name": "string", "role": "string"}
+- meetingEffectiveness: {"score": 1-10, "explanation": "string"}
+- followUpRequired: true or false
+- nextSteps: array of strings
+- sentiment: {"overall": "positive" or "neutral" or "negative", "explanation": "string"}
+
+Return ONLY valid JSON, no markdown, no backticks.
+
+Transcript:
+${transcript}`
+
     const response = await fetch(AMVERA_URL, {
       method: 'POST',
       headers: {
@@ -27,25 +43,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_completion_tokens: 4096,
+        max_tokens: 4096,
         messages: [
           {
             role: 'user',
-            text: `You are an expert meeting analyst. Analyze this meeting transcript and return a JSON with:
-- executiveSummary: 3-4 sentence professional summary of what was discussed and decided
-- keyDecisions: array of concrete decisions made (with decision owner if mentioned), e.g. {"decision": "string", "owner": "string or null"}
-- actionItems: array of {"task": "string", "assignee": "string or null", "deadline": "string or null", "priority": "high"|"medium"|"low"}
-- discussionTopics: array of {"topic": "string", "summary": "string", "duration": "string - estimated"}
-- participants: array of {"name": "string (use Speaker N if unknown)", "role": "string - inferred from conversation"}
-- meetingEffectiveness: {"score": number 1-10, "explanation": "string"}
-- followUpRequired: boolean
-- nextSteps: array of strings
-- sentiment: {"overall": "positive"|"neutral"|"negative", "explanation": "string"}
-
-Return ONLY valid JSON (no markdown, no \`\`\`). Use null for missing optional fields.
-
-Transcript:
-${JSON.stringify(transcript).slice(1, -1)}`,
+            content: prompt,
           },
         ],
       }),
@@ -60,7 +62,7 @@ ${JSON.stringify(transcript).slice(1, -1)}`,
     }
 
     const data = await response.json()
-    const content = data.choices?.[0]?.message?.text
+    const content = data.choices?.[0]?.message?.content
 
     if (!content) {
       return NextResponse.json({ error: 'Пустой ответ от ИИ' }, { status: 500 })

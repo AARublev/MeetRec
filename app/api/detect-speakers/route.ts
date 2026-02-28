@@ -19,6 +19,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Транскрипт не указан' }, { status: 400 })
     }
 
+    const prompt = `Analyze this meeting transcript and detect how many unique speakers there are.
+
+Look for patterns such as:
+- "Speaker 1:", "Speaker 2:", "Speaker N:" labels
+- Different speaking styles, tone changes, or conversational turns
+- Names mentioned in dialogue
+
+Return a JSON object with this exact structure (no markdown, no backticks):
+{
+  "speakerCount": 2,
+  "speakerLabels": ["Speaker 1", "Speaker 2"]
+}
+
+Minimum 1 speaker.
+
+Transcript:
+${transcript}`
+
     const response = await fetch(AMVERA_URL, {
       method: 'POST',
       headers: {
@@ -27,28 +45,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_completion_tokens: 512,
+        max_tokens: 512,
         messages: [
           {
             role: 'user',
-            text: `Analyze this meeting transcript and detect how many unique speakers there are.
-
-Look for patterns such as:
-- "Speaker 1:", "Speaker 2:", "Speaker N:" labels
-- Different speaking styles, tone changes, or conversational turns
-- Names mentioned in dialogue
-- Dialogue attribution patterns (e.g. "John said...", "— Anna: ...")
-
-Return a JSON object with this exact structure (no markdown, no \`\`\`):
-{
-  "speakerCount": <number>,
-  "speakerLabels": ["Speaker 1", "Speaker 2", ...]
-}
-
-If uncertain, estimate based on conversational turns. Minimum 1 speaker.
-
-Transcript:
-${JSON.stringify(transcript).slice(1, -1)}`,
+            content: prompt,
           },
         ],
       }),
@@ -63,7 +64,7 @@ ${JSON.stringify(transcript).slice(1, -1)}`,
     }
 
     const data = await response.json()
-    const content = data.choices?.[0]?.message?.text
+    const content = data.choices?.[0]?.message?.content
 
     if (!content) {
       return NextResponse.json({ error: 'Пустой ответ от ИИ' }, { status: 500 })

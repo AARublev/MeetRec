@@ -19,6 +19,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Транскрипт не указан' }, { status: 400 })
     }
 
+    const prompt = `You are a meeting transcription specialist. Format this transcript with timestamps and speaker labels.
+
+Rules:
+- Format: [MM:SS] Speaker N: text
+- Start at [00:00], estimate timestamps at 150 words per minute
+- One turn per line
+- Use existing speaker labels if present
+
+Return ONLY the formatted transcript text, no explanations.
+
+Raw transcript:
+${transcript}`
+
     const response = await fetch(AMVERA_URL, {
       method: 'POST',
       headers: {
@@ -27,25 +40,11 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1',
-        max_completion_tokens: 8192,
+        max_tokens: 8192,
         messages: [
           {
             role: 'user',
-            text: `You are a meeting transcription specialist. Take the raw meeting text below and convert it into a professionally formatted transcript with timestamps and speaker labels.
-
-Rules:
-- Assign each speaking turn to a speaker (Speaker 1, Speaker 2, etc.)
-- Add estimated timestamps in [MM:SS] format at the start of each turn
-- Start at [00:00] and estimate timestamps based on typical speaking pace (~150 words/min)
-- Preserve the original content; only reorganize and format
-- Output format for each turn: [MM:SS] Speaker N: <text>
-- Keep one turn per line
-- If the input already has speaker labels, use them. Otherwise infer from dialogue.
-
-Return ONLY the formatted transcript text, no JSON, no markdown code blocks, no explanations.
-
-Raw transcript:
-${transcript}`,
+            content: prompt,
           },
         ],
       }),
@@ -60,7 +59,7 @@ ${transcript}`,
     }
 
     const data = await response.json()
-    const content = data.choices?.[0]?.message?.text
+    const content = data.choices?.[0]?.message?.content
 
     if (!content) {
       return NextResponse.json({ error: 'Пустой ответ от ИИ' }, { status: 500 })
