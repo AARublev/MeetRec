@@ -63,7 +63,7 @@ ${JSON.stringify(transcript).slice(1, -1)}`,
     }
 
     const data = await response.json()
-    const content = data.choices?.[0]?.message?.content
+    const content = data.choices?.[0]?.message?.text
 
     if (!content) {
       return NextResponse.json({ error: 'Пустой ответ от ИИ' }, { status: 500 })
